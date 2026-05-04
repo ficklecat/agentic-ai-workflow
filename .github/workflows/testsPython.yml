@@ -86,7 +86,7 @@ jobs:
         if: ${{ needs.python-unit-tests.result == 'failure' }}
         run: |
           curl -X POST \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Authorization: token ${{ secrets.DAP20_TOKEN }}" \
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/${{ github.repository }}/issues \
             -d "{\"title\":\"Test Suite Failed\",\"body\":\"Tests failed on ${{ github.ref_name }}: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}"
