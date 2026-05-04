@@ -42,6 +42,17 @@ jobs:
   # tests by using a custom action located in ./.github/actions/tests/python.
   python-unit-tests:
     runs-on: ubuntu-latest # the runner (remote machine) will use Ubuntu OS
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+          MYSQL_USER: ${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     steps:
       - name: Checkout code
         id: checkout
@@ -55,11 +66,11 @@ jobs:
           openai-api-organization: "${{ secrets.OPENAI_API_ORGANIZATION }}"
           openai-api-key: "${{ secrets.OPENAI_API_KEY }}"
           mysql-host: "${{ secrets.MYSQL_HOST }}"
-          mysql-port: "${{ secrets.MYSQL_PORT }}"
+          mysql-port: 3306
           mysql-user: "${{ secrets.MYSQL_USER }}"
           mysql-password: "${{ secrets.MYSQL_PASSWORD }}"
           mysql-database: "${{ secrets.MYSQL_DATABASE }}"
-          mysql-charset: "${{ secrets.MYSQL_CHARSET }}"
+          mysql-charset: "utf8mb4"
           codecov-token: "${{ secrets.CODECOV_TOKEN }}"
 
   # Job #2: Notifications (Mini-capstone assignment)
@@ -69,11 +80,28 @@ jobs:
   notifications:
     needs: python-unit-tests
     runs-on: ubuntu-latest
+    if: always()
     steps:
-      - name: Notify on test results
+      - name: Create GH issue on test failure
+        if: ${{ needs.python-unit-tests.result == 'failure' }}
         run: |
-          if [ "${{ needs.python-unit-tests.result }}" == "success" ]; then
-            echo "success notifications go here"
-          else
-            echo "failure notifications go here"
-          fi
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.DAP20_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/issues \
+            -d "{\"title\":\"Test Suite Failed\",\"body\":\"Tests failed on ${{ github.ref_name }}: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}"
+      - name: Send email notification
+        if: ${{ needs.python-unit-tests.result == 'failure' }}
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.mail.me.com
+          server_port: 587
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_APP_PASSWORD }}
+          subject: "DAP20 - Python Tests Failed"
+          to: ${{ secrets.NOTIFICATION_EMAIL }}
+          from: ${{ secrets.MAIL_USERNAME }}
+          body: |
+            Test suite failed on branch: ${{ github.ref_name }}
+
+            View results: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

@@ -46,6 +46,7 @@ def main(prompts: Optional[Tuple[str, ...]] = None) -> None:
 
         user_prompt = prompts[i] if prompts and len(prompts) > i else input(followup_question or default_prompt)
 
+        # Check if done with the chat.
         if user_prompt and user_prompt.lower().strip() in [
             "no",
             "no thanks",
@@ -57,7 +58,7 @@ def main(prompts: Optional[Tuple[str, ...]] = None) -> None:
             "that's all",
             "nothing else",
         ]:
-            print("Thank you for using Stackademy! Goodbye!")
+            print("Thank you for using Stackademy! Good day to you!")
             break
 
         response, functions_called = completion(prompt=user_prompt)
