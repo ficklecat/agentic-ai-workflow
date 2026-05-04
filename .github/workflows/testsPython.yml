@@ -93,13 +93,13 @@ jobs:
         if: ${{ needs.python-unit-tests.result == 'failure' }}
         uses: dawidd6/action-send-mail@v3
         with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          username: ${{ secrets.GMAIL_USERNAME }}
-          password: ${{ secrets.GMAIL_APP_PASSWORD }}
-          subject: "Python Tests Failed"
+          server_address: smtp.mail.me.com
+          server_port: 587
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_APP_PASSWORD }}
+          subject: "DAP20 - Python Tests Failed"
           to: ${{ secrets.NOTIFICATION_EMAIL }}
-          from: ${{ secrets.GMAIL_USERNAME }}
+          from: ${{ secrets.MAIL_USERNAME }}
           body: |
             Test suite failed on branch: ${{ github.ref_name }}
 
