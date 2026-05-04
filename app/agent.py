@@ -58,7 +58,7 @@ def main(prompts: Optional[Tuple[str, ...]] = None) -> None:
             "that's all",
             "nothing else",
         ]:
-            print("Thank you for using Stackademy! Goodbye!")
+            print("Thank you for using Stackademy! Good day to you!")
             break
 
         response, functions_called = completion(prompt=user_prompt)
